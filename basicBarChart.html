@@ -14,7 +14,12 @@ body {
 }
 
 .bar {
-  fill: #23be2b;
+     fill: url('#barGradient');
+}
+
+
+.bar:hover {
+     fill: url('#activeBarGradient');
 }
 
 .x.axis path {
@@ -24,90 +29,185 @@ body {
 
 </style>
 <body>
-<script type="text/javascript" src="d3/d3.js"></script>
-<script>
+     <script type="text/javascript" src="d3/d3.js"></script>
+     <script>
 
 
-//to Do: load JSON ov votes and associated frequencies of total counts dynamically
+//to Do: load JSON of votes and associated frequencies of total counts dynamically
+
+
+// set up of graph configurations
 
 var votes = [
-  
-  {"value": -3, "frequency": 0.08167 },
-  {"value": -2, "frequency": 0.11492 },
-  {"value": -1, "frequency": 0.12780},
-  {"value":  0, "frequency": 0.04253 },
-  {"value":  1, "frequency": 0.03702 },
-  {"value":  2, "frequency": 0.02288 },
-  {"value":  3, "frequency": 0.02022 }
-  
-  
-  ]
+
+{"value": -3, "frequency": 20 },
+{"value": -2, "frequency": 17 },
+{"value": -1, "frequency": 23 },
+{"value":  0, "frequency": 15 },
+{"value":  1, "frequency": 13 },
+{"value":  2, "frequency": 9 },
+{"value":  3, "frequency": 3 }
+
+]
 
 var margin = {top: 20, right: 20, bottom: 30, left: 40},
-    width = 960 - margin.left - margin.right,
-    height = 500 - margin.top - margin.bottom;
+width = 960 - margin.left - margin.right,
+height = 500 - margin.top - margin.bottom;
 
-var formatPercent = d3.format(".0%");
+var chartInput = new Object();
 
-var x = d3.scale.ordinal()
-    .rangeRoundBands([0, width], .1);
+chartInput.margin = {top: 20, right: 20, bottom: 30, left: 40};
+chartInput.width = 960 - margin.left - margin.right;
+chartInput.height = 500 - margin.top - margin.bottom;
+chartInput.votes = votes;
 
-var y = d3.scale.linear()
-    .range([height, 0]);
-
-var xAxis = d3.svg.axis()
-    .scale(x)
-    .orient("bottom");
-
-var yAxis = d3.svg.axis()
-    .scale(y)
-    .orient("left")
-    .tickFormat(formatPercent);
-
-var svg = d3.select("body").append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-  .append("g")
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-
-  x.domain(votes.map(function(d) { return d.value; }));
-  y.domain([0, d3.max(votes, function(d) { return d.frequency; })]);
-
-  svg.append("g")
-      .attr("class", "x axis")
-      .attr("transform", "translate(0," + height + ")")
-      .call(xAxis)
-    .append("text")
-      .attr("y", 6)
-      .attr("x", width + 10)
-      .attr("dy", ".71em")
-      .style("text-anchor", "end")
-      .text("Vote")
-      .attr("font-size", 15);
+//end of setup
 
 
 
-  svg.append("g")
-      .attr("class", "y axis")
-      .call(yAxis)
-    .append("text")
-      .attr("transform", "rotate(-90)")
-      .attr("y", 6)
-      .attr("dy", ".71em")
-      .style("text-anchor", "end")
-      .text("Frequency")
-      .attr("font-size", 15);
 
-  svg.selectAll(".bar")
-      .data(votes)
-    .enter().append("rect")
-      .attr("class", "bar")
-      .attr("x", function(d) { return x(d.value); })
-      .attr("width", x.rangeBand())
-      .attr("y", function(d) { return y(d.frequency); })
-      .attr("height", function(d) { return height - y(d.frequency); });
+var barChart = chartBarChart(chartInput);
 
 
+function chartBarChart(config){
 
-</script>
+     var margin = config.margin
+     var width = config.width;
+     var height = config.height;
+     var votes = config.votes;
+
+     function redraw(){
+          my.redraw();
+          return my;
+     }
+
+     function my(){
+
+
+          var x = d3.scale.ordinal()
+          .domain(votes.map(function(d) { return d.value; }))
+          .rangeRoundBands([10, width], .1);
+
+          var y = d3.scale.linear()
+          .domain([0, d3.max(votes, function(d) { return d.frequency; })])
+          .range([height, 0]);
+
+          var xAxis = d3.svg.axis()
+          .scale(x)
+          .orient("bottom");
+
+          var yAxis = d3.svg.axis()
+          .scale(y)
+          .orient("left")
+
+          var svg = d3.select("body").append("svg")
+          .attr("width", width + margin.left + margin.right)
+          .attr("height", height + margin.top + margin.bottom)
+          .append("g")
+          .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+
+//setting the gradient for the svg
+var defs = svg.append('svg:defs');
+
+defs.append('svg:linearGradient')
+.attr('x1', "0%").attr('y1', "0%").attr('x2', "0%").attr('y2', "100%")
+.attr('id', 'activeBarGradient').call(
+ function(gradient) {
+   gradient.append('svg:stop').attr('offset', '0%').attr('style', 'stop-color:#30e2a6;stop-opacity:1');
+   gradient.append('svg:stop').attr('offset', '100%').attr('style', 'stop-color:#08d167;stop-opacity:1');
+});
+
+defs.append('svg:linearGradient')
+.attr('x1', "0%").attr('y1', "0%").attr('x2', "0%").attr('y2', "100%")
+.attr('id', 'barGradient').call(
+ function(gradient) {
+   gradient.append('svg:stop').attr('offset', '0%').attr('style', 'stop-color:#9d9ea0;stop-opacity:1');
+   gradient.append('svg:stop').attr('offset', '100%').attr('style', 'stop-color:#686362;stop-opacity:1');
+});
+
+
+
+//x-axis
+svg.append("g")
+.attr("class", "x axis")
+.attr("transform", "translate(0," + height + ")")
+     .call(xAxis)
+     .append("text")
+     .attr("y", 6)
+     .attr("x", width + 20)
+     .attr("dy", ".71em")
+     .style("text-anchor", "end")
+     .text("Vote Value")
+     .attr("font-size", 15);
+
+     svg.append("g")
+     .attr("class", "y axis")
+     .call(yAxis)
+     .append("text")
+     .attr("transform", "rotate(-90)")
+     .attr("y", 6)
+     .attr("dy", ".71em")
+     .style("text-anchor", "end")
+     .text("# Votes in Category")
+     .attr("font-size", 15);
+
+     svg.selectAll(".bar")
+     .data(votes)
+     .enter().append("rect")
+     .attr("class", "bar")
+     .attr("x", function(d) { return x(d.value); })
+     .attr("width", x.rangeBand())
+     .attr("y", function(d) { return y(d.frequency); })
+     .attr("height", function(d) { return height - y(d.frequency); })
+     .on("click", function(d) {
+          for (var i = votes.length - 1; i >= 0; i--) {
+               votes[i].frequency = Math.floor(Math.random() * 100);
+          };
+          redraw();
+     });;
+
+
+     // //Create labels
+     // svg.selectAll("g.text")
+     // .data(votes)
+     // .enter()
+     // .append("text")
+     // .attr("class", "labels")
+     // .text(function(d) {
+     //      return (d.value).toString();
+     // })
+     //    //.attr("text-anchor", "middle")
+     //    .attr("x", function(d, i) {
+     //      return x(d.value) + x.rangeBand(i) / 2;
+     // })
+     //    .attr("y", function(d) {
+     //      return  y(d.frequency) - 2;
+     // })
+     //    .attr("font-size", "15px");
+
+     redraw = function (){
+
+          y.domain([0, d3.max(votes, function(d) { return d.frequency; })]);
+
+          svg.selectAll("rect")
+          .data(votes)
+          .transition()
+          .duration(1000)
+          .attr("y", function(d) { return y(d.frequency); })
+          .attr("height", function(d) { return height - y(d.frequency); })
+
+          svg.select(".y.axis")
+          .transition()
+          .duration(1000)
+          .call(yAxis);
+
+     }
+
+}
+return my();
+}
+
+
+
+               </script>
